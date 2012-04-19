@@ -26,6 +26,7 @@ public class LPP {
 		double[] constraintRightHandSides, 
 		double objectiveFunctionValue) {
 		
+		// TODO: Well-formed checking and exception throwing.
 		this.objectiveFunctionType = objectiveFunctionType;
 		this.variableNames = variableNames;
 		this.objectiveFunctionCoefficients = objectiveFunctionCoefficients;
@@ -37,29 +38,23 @@ public class LPP {
 
 
 	public String toString() {
-		String output = "";
-		if(this.objectiveFunctionType=="Max") {
-			output = "Maximize";
-		}
-		else {
-			output = "Minimize";
-		}
+		String output = (objectiveFunctionType == "Max") ? "Maximize" : "Minimize";
 
-		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, this.variableNames);
+		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, variableNames);
 		if(objectiveFunctionValue != 0) {
-			output = output + " + " /* + Toolbox.formatDecimals(this.objectiveFunctionValue) */;
+			output += " + " formatDecimals(objectiveFunctionValue);
 		}
 
-		output = output + '\n' + "subject to the constraints:" + '\n';
+		output += '\n' + "subject to the constraints:" + '\n';
 
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
-			output = output + displayEqLine(constraint, variableNames);
-			output = output + " " + constraintTypes[j];
-			output = output + " " /* + Toolbox.formatDecimals(this.constraintRightHandSides[j]) */;
-			output = output + '\n';
+			output += displayEqLine(constraint, variableNames);
+			output += " " + constraintTypes[j];
+			output += " " + formatDecimals(constraintRightHandSides[j]);
+			output += '\n' + '\n';
 		}
-		return output + '\n';
+		return output;
 	}
 
 	private static String displayEqLine(double[] coefficients, String[] variableNames) {
@@ -104,12 +99,12 @@ public class LPP {
 		//Change Signs to = by adding variables
 		for(int i = 0; i < constraintTypes.length; i++) {
 
-			if(constraintTypes[i] == "³") {
+			if(constraintTypes[i] == "ï¿½") {
 				this.addVariableAt(i, -1);
 				constraintTypes[i] = "=";
 			}
 
-			if(constraintTypes[i] == "²") {
+			if(constraintTypes[i] == "ï¿½") {
 				this.addVariableAt(i, 1);
 				constraintTypes[i] = "=";
 			}
@@ -123,13 +118,13 @@ public class LPP {
 		// TODO: Cleaner
 		for(int i = 0; i < constraintTypes.length; i++) {
 
-			if(constraintTypes[i] == "³") {
+			if(constraintTypes[i] == "ï¿½") {
 				addVariableAt(i, -1);
 				constraintTypes[i] = "=";
 				artificialVariables = increaseArtificialVariableIndices(artificialVariables);
 			}
 
-			if(constraintTypes[i] == "²") {
+			if(constraintTypes[i] == "ï¿½") {
 				addVariableAt(i, 1);
 				constraintTypes[i] = "=";
 				artificialVariables = increaseArtificialVariableIndices(artificialVariables);
