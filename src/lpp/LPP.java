@@ -1,19 +1,21 @@
 package lpp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.text.DecimalFormat;
 
 
 public class LPP {
 
-	private String objectiveFunctionType;
+	private objectiveFunctionTypes objectiveFunctionType;
 	private String[] variableNames;
 	private double[] objectiveFunctionCoefficients;
 	private double[][] constraintCoefficients;
 	private String[] constraintTypes;
 	private double[] constraintRightHandSides;
 	private double objectiveFunctionValue;
-	
+
+	private enum objectiveFunctionTypes { MAX, MIN };
 	private static final int PIVOT_ITERATION_LIMIT = 1000;
 
 	// constructors
@@ -26,7 +28,7 @@ public class LPP {
 		double[] constraintRightHandSides, 
 		double objectiveFunctionValue) {
 		
-		this.objectiveFunctionType = objectiveFunctionType;
+		this.objectiveFunctionType = (objectiveFunctionType == "Max") ? objectiveFunctionTypes.MAX : objectiveFunctionTypes.MIN;
 		this.variableNames = variableNames;
 		this.objectiveFunctionCoefficients = objectiveFunctionCoefficients;
 		this.constraintCoefficients = constraintCoefficients;
@@ -37,29 +39,23 @@ public class LPP {
 
 
 	public String toString() {
-		String output = "";
-		if(this.objectiveFunctionType=="Max") {
-			output = "Maximize";
-		}
-		else {
-			output = "Minimize";
-		}
+		String output = (objectiveFunctionType == objectiveFunctionTypes.MAX) ? "Maximize" : "Minimize";
 
-		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, this.variableNames);
+		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, variableNames);
 		if(objectiveFunctionValue != 0) {
-			output = output + " + " /* + Toolbox.formatDecimals(this.objectiveFunctionValue) */;
+			output = output + " + " + formatDecimals(objectiveFunctionValue);
 		}
 
 		output = output + '\n' + "subject to the constraints:" + '\n';
 
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
-			output = output + displayEqLine(constraint, variableNames);
-			output = output + " " + constraintTypes[j];
-			output = output + " " /* + Toolbox.formatDecimals(this.constraintRightHandSides[j]) */;
-			output = output + '\n';
+			output += displayEqLine(constraint, variableNames);
+			output += " " + constraintTypes[j];
+			output += " "  + formatDecimals(constraintRightHandSides[j]) ;
+			output += + '\n' + '\n';
 		}
-		return output + '\n';
+		return output;
 	}
 
 	private static String displayEqLine(double[] coefficients, String[] variableNames) {
@@ -94,43 +90,50 @@ public class LPP {
 		return output;
 	}
 	
+	// String formatting helper function.
 	private static String formatDecimals(double d) {
 		DecimalFormat formatMyDecimal = new DecimalFormat("#,###.###");
 		return formatMyDecimal.format(d);
 	}
+	
+	// Convert an integer into a multi-character subscript.
+	private String subscriptN(int n) {
+		String index = "" + n;
+		String subscript = "";
+		char c;
+		for(int i = 0; i < index.length(); i++) {
+			switch (n) {
+		        case 0 :  c = '\u2080'; break;
+		        case 1 :  c = '\u2081'; break;
+		        case 2 :  c = '\u2082'; break;
+		        case 3 :  c = '\u2083'; break;
+		        case 4 :  c = '\u2084'; break;
+		        case 5 :  c = '\u2085'; break;
+		        case 6 :  c = '\u2086'; break;
+		        case 7 :  c = '\u2087'; break;
+		        case 8 :  c = '\u2088'; break;
+		        default:  c = '\u2089'; break;
+		    }
+			subscript += c;
+		}
+		return subscript;
+	}
 
 	public void makeStandardForm() {
-
 		//Change Signs to = by adding variables
 		for(int i = 0; i < constraintTypes.length; i++) {
-
-			if(constraintTypes[i] == "³") {
-				this.addVariableAt(i, -1);
-				constraintTypes[i] = "=";
-			}
-
-			if(constraintTypes[i] == "²") {
-				this.addVariableAt(i, 1);
+			if(constraintTypes[i] != "=") {
+				this.addVariableAt(i, (constraintTypes[i] == "³") ? -1 : 1);
 				constraintTypes[i] = "=";
 			}
 		}
 	}
 	
-	// TODO: Review
 	private void makeStandardForm(ArrayList<Integer> artificialVariables) {
-
 		//Change Signs to = by adding variables
-		// TODO: Cleaner
 		for(int i = 0; i < constraintTypes.length; i++) {
-
-			if(constraintTypes[i] == "³") {
-				addVariableAt(i, -1);
-				constraintTypes[i] = "=";
-				artificialVariables = increaseArtificialVariableIndices(artificialVariables);
-			}
-
-			if(constraintTypes[i] == "²") {
-				addVariableAt(i, 1);
+			if(constraintTypes[i] != "=") {
+				addVariableAt(i, (constraintTypes[i] == "³") ? -1 : 1);
 				constraintTypes[i] = "=";
 				artificialVariables = increaseArtificialVariableIndices(artificialVariables);
 			}
@@ -229,23 +232,20 @@ public class LPP {
 		}
 	}
 
-	// TODO: Fix Array appending stuff.
+	// Unfortunate copy and pasting going on here.
 	private void addVariableAt(int constraintIndex, double value) {
-
-		// variableNames = variableNames.add(Toolbox.getSubscript(variableNames.length));
-		// objectiveFunctionCoefficients.add(new Double(0));
+		String[] newVariableNames = Arrays.copyOf(variableNames, variableNames.length + 1);
+		newVariableNames[variableNames.length + 1] = subscriptN(variableNames.length);
+		variableNames = newVariableNames;
+		
+		double[] newObjectiveFunctionCoefficients = Arrays.copyOf(objectiveFunctionCoefficients, objectiveFunctionCoefficients.length + 1);
+		newObjectiveFunctionCoefficients[objectiveFunctionCoefficients.length + 1] = 0;
+		objectiveFunctionCoefficients = newObjectiveFunctionCoefficients;
+		
 		for(int j = 0; j < constraintCoefficients.length; j++) {
-			// TODO: Merge with shorthand if notation.
-			if(j != constraintIndex) {
-				double[] constraint = constraintCoefficients[j]; //copyOf(constraintCoefficients[j], constraintCoefficients[j].length + 1);
-				// constraint.add(new Double(0));
-				constraintCoefficients[j] = constraint;
-			}
-			else {
-				double[] constraint = constraintCoefficients[j];
-				// constraint.add(new Double(value));
-				constraintCoefficients[j] = constraint;
-			}
+			double[] constraint = Arrays.copyOf(constraintCoefficients[j], constraintCoefficients[j].length + 1);
+			constraint[constraintCoefficients[j].length + 1] = (j != constraintIndex) ? 0 : value;
+			constraintCoefficients[j] = constraint;
 		}
 	}
 
@@ -344,7 +344,7 @@ public class LPP {
 		int choice = -1;
 
 		double maxormin = 1;
-		if(objectiveFunctionType == "Max") {
+		if(objectiveFunctionType == objectiveFunctionTypes.MAX) {
 			maxormin = maxormin*(-1);
 		}
 
