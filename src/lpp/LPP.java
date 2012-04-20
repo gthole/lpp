@@ -28,6 +28,7 @@ public class LPP {
 		double[] constraintRightHandSides, 
 		double objectiveFunctionValue) {
 		
+		// TODO: Well-formed checking and exception throwing.
 		this.objectiveFunctionType = (objectiveFunctionType == "Max") ? objectiveFunctionTypes.MAX : objectiveFunctionTypes.MIN;
 		this.variableNames = variableNames;
 		this.objectiveFunctionCoefficients = objectiveFunctionCoefficients;
@@ -43,10 +44,10 @@ public class LPP {
 
 		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, variableNames);
 		if(objectiveFunctionValue != 0) {
-			output = output + " + " + formatDecimals(objectiveFunctionValue);
+			output += " + " formatDecimals(objectiveFunctionValue);
 		}
 
-		output = output + '\n' + "subject to the constraints:" + '\n';
+		output += '\n' + "subject to the constraints:" + '\n';
 
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
