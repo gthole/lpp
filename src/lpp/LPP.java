@@ -18,6 +18,19 @@ public class LPP {
 	private enum objectiveFunctionTypes { MAX, MIN };
 	private static final int PIVOT_ITERATION_LIMIT = 1000;
 
+	public static final boolean USE_SUBSCRIPT_UNICODE = false;
+
+	public static void main( String[] args ) {
+		LPP lpp = LPPExamples.maximizeExample();
+		System.out.println(lpp.toString());
+		
+		LPPSolution solved = lpp.solve();
+		System.out.println(lpp.toString());
+		System.out.println(solved.toString());
+		System.out.println(solved.constraintSensitivityString());
+		System.out.println(solved.getSolutionLog());
+	}
+	
 	// constructors
 	public LPP(
 		String objectiveFunctionType, 
@@ -28,7 +41,6 @@ public class LPP {
 		double[] constraintRightHandSides, 
 		double objectiveFunctionValue) {
 		
-		// TODO: Well-formed checking and exception throwing.
 		this.objectiveFunctionType = (objectiveFunctionType == "Max") ? objectiveFunctionTypes.MAX : objectiveFunctionTypes.MIN;
 		this.variableNames = variableNames;
 		this.objectiveFunctionCoefficients = objectiveFunctionCoefficients;
@@ -43,20 +55,22 @@ public class LPP {
 		String output = (objectiveFunctionType == objectiveFunctionTypes.MAX) ? "Maximize" : "Minimize";
 
 		output = output + "  " + displayEqLine(objectiveFunctionCoefficients, variableNames);
+		/*
 		if(objectiveFunctionValue != 0) {
-			output += " + " formatDecimals(objectiveFunctionValue);
+			output = output + " = " + formatDecimals(objectiveFunctionValue);
 		}
-
-		output += '\n' + "subject to the constraints:" + '\n';
+		*/
+		
+		output = output + '\n' + "subject to the constraints:" + '\n';
 
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
 			output += displayEqLine(constraint, variableNames);
 			output += " " + constraintTypes[j];
 			output += " "  + formatDecimals(constraintRightHandSides[j]) ;
-			output += + '\n' + '\n';
+			output += '\n';
 		}
-		return output;
+		return output + '\n';
 	}
 
 	private static String displayEqLine(double[] coefficients, String[] variableNames) {
@@ -78,10 +92,9 @@ public class LPP {
 			String signString = " + ";
 			double sign = 1.0;
 
-			// Same 0 OR -0 check here.
-			if(coefficients[i] < 0) {
+			if(coefficients[i] < 0.0) {
 				signString = " - ";
-				sign = 1.0;
+				sign = -1;
 			}
 			if(coefficients[i] != 0) {
 				output = output + signString + formatDecimals(sign * coefficients[i]) + variableNames[i];
@@ -99,6 +112,11 @@ public class LPP {
 	
 	// Convert an integer into a multi-character subscript.
 	private String subscriptN(int n) {
+		if (!USE_SUBSCRIPT_UNICODE) {
+			return "_"+n;
+		}
+		
+		@SuppressWarnings("unused")
 		String index = "" + n;
 		String subscript = "";
 		char c;
@@ -236,16 +254,16 @@ public class LPP {
 	// Unfortunate copy and pasting going on here.
 	private void addVariableAt(int constraintIndex, double value) {
 		String[] newVariableNames = Arrays.copyOf(variableNames, variableNames.length + 1);
-		newVariableNames[variableNames.length + 1] = subscriptN(variableNames.length);
+		newVariableNames[variableNames.length] = "v" + subscriptN(variableNames.length + 1);
 		variableNames = newVariableNames;
 		
 		double[] newObjectiveFunctionCoefficients = Arrays.copyOf(objectiveFunctionCoefficients, objectiveFunctionCoefficients.length + 1);
-		newObjectiveFunctionCoefficients[objectiveFunctionCoefficients.length + 1] = 0;
+		newObjectiveFunctionCoefficients[objectiveFunctionCoefficients.length] = 0;
 		objectiveFunctionCoefficients = newObjectiveFunctionCoefficients;
 		
 		for(int j = 0; j < constraintCoefficients.length; j++) {
 			double[] constraint = Arrays.copyOf(constraintCoefficients[j], constraintCoefficients[j].length + 1);
-			constraint[constraintCoefficients[j].length + 1] = (j != constraintIndex) ? 0 : value;
+			constraint[constraintCoefficients[j].length] = (j != constraintIndex) ? 0 : value;
 			constraintCoefficients[j] = constraint;
 		}
 	}
@@ -311,12 +329,12 @@ public class LPP {
 			}
 			
 			// Check to see if the basic variable set alpha is feasible
-			if(isFeasible(this, alpha)==true) {
+			if(constraintRightHandSides.length <= alpha.size() && isFeasible(this, alpha)==true) {
 				foundBasicFeasSol = true;
 				break;
 			}
 		}
-		
+		System.out.println("findBasicFeasSol : "+alpha);
 		//  No feasible solution is found, create dummy solution vector.
 		if(!foundBasicFeasSol) {
 			alpha = new ArrayList<Integer>();
@@ -344,10 +362,7 @@ public class LPP {
 		double q = 0;
 		int choice = -1;
 
-		double maxormin = 1;
-		if(objectiveFunctionType == objectiveFunctionTypes.MAX) {
-			maxormin = maxormin*(-1);
-		}
+		int maxormin = (objectiveFunctionType == objectiveFunctionTypes.MAX) ? -1 : 1;
 
 		for(int i = 0; i < objectiveFunctionCoefficients.length; i++) {
 			double coefficientTerm = maxormin * objectiveFunctionCoefficients[i];
@@ -356,8 +371,8 @@ public class LPP {
 				if(coefficientTerm == -0.0) {
 					coefficientTerm = 0.0;
 				}
-				// TODO: Confirm comparison is correct.  Should be >?
 				if(coefficientTerm < q) {
+					System.out.println(maxormin + ", " + coefficientTerm + ", " + q);
 					q = coefficientTerm;
 					choice = i;
 				}
@@ -498,11 +513,12 @@ public class LPP {
 			}
 		}
 
-		// Collect Constraint Sensitivity Analysis Data from Final Tableau
+		// Collect constraint sensitivity analysis data from final tableau
 		for(int j = 0; j < constraintTypes.length; j++) {
 			if(constraintTypes[j] == "=") {
 				slack[j] = 0;
-				shadowPrice[j] = -1 * objectiveFunctionCoefficients[artificialVariables.get(j)];
+				shadowPrice[j] = artificialVariables.get(j);
+				// shadowPrice[j] = -1 * objectiveFunctionCoefficients[artificialVariables.get(j)];
 			}
 			// This had the double 0.0 or -0.0 check.
 			else if(objectiveFunctionCoefficients[varNum] == 0.0){
