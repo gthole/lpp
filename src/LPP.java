@@ -17,10 +17,9 @@ public class LPP {
 
 	private enum objectiveFunctionTypes { MAX, MIN };
 	private static final int PIVOT_ITERATION_LIMIT = 1000;
+	private static final boolean USE_SUBSCRIPT_UNICODE = false;
 
-	public static final boolean USE_SUBSCRIPT_UNICODE = false;
-
-	public static void main( String[] args ) {
+	public static void main( String[] args ) throws Exception {
 		LPP lpp = LPPExamples.maximizeExample();
 		System.out.println(lpp.toString());
 		
@@ -38,8 +37,27 @@ public class LPP {
 		double[][] constraintCoefficients, 
 		String[] constraintTypes, 
 		double[] constraintRightHandSides, 
-		double objectiveFunctionValue) {
+		double objectiveFunctionValue) throws Exception {
 		
+		// Create default variable name array
+		if (variableNames == null || variableNames.length == 0) {
+			variableNames = new String[objectiveFunctionCoefficients.length];
+			for (int i = 0; i < variableNames.length; i++) {
+				variableNames[i] = "x" + subscriptN(i);
+			}
+		}
+		
+		// Validation
+		if (constraintTypes.length != constraintRightHandSides.length || constraintRightHandSides.length != constraintCoefficients.length)
+			throw new Exception("LPP constraints do not appear well-formed.");
+		if (variableNames.length != objectiveFunctionCoefficients.length)
+			throw new Exception("LPP objective function does not appear well-formed.");
+		for (int i = 0; i < constraintCoefficients.length; i++) {
+			if (constraintCoefficients[i].length != variableNames.length) {
+				throw new Exception("LPP constraint " + i + " is not of the same size length as the objective function.");
+			}
+		}
+
 		this.objectiveFunctionType = (objectiveFunctionType == "Max") ? objectiveFunctionTypes.MAX : objectiveFunctionTypes.MIN;
 		this.variableNames = variableNames;
 		this.objectiveFunctionCoefficients = objectiveFunctionCoefficients;
@@ -77,7 +95,6 @@ public class LPP {
 
 		int startIndex = 1;
 		for(int i = 0; i < variableNames.length; i++) {
-			// Had a comparison with 0 OR -0, which seems weird.  TODO: Check.
 			if(coefficients[i] != 0) {
 				output = output + formatDecimals(coefficients[i]) +  variableNames[i];
 				break;
@@ -148,7 +165,7 @@ public class LPP {
 	}
 	
 	private void makeStandardForm(ArrayList<Integer> artificialVariables) {
-		//Change Signs to = by adding variables
+		// Change signs to = by adding variables
 		for(int i = 0; i < constraintTypes.length; i++) {
 			if(constraintTypes[i] != "=") {
 				addVariableAt(i, (constraintTypes[i] == "³") ? -1 : 1);
@@ -159,9 +176,9 @@ public class LPP {
 	}
 	
 	private static ArrayList<Integer> increaseArtificialVariableIndices(ArrayList<Integer> artificialVariables) {
-		for(int j = 0; j < artificialVariables.size(); j++) {
-			if(artificialVariables.get(j) != -1) {
-				artificialVariables.set(j, artificialVariables.get(j) + 1);
+		for(int artificialVariable : artificialVariables) {
+			if(artificialVariable != -1) {
+				artificialVariable++;
 			}
 		}
 		return artificialVariables;
@@ -183,7 +200,6 @@ public class LPP {
 	}
 
 	private void addArtificialVariables(ArrayList<Integer> artificialVariables) {
-		// TODO: Use for each?
 		for(int j = 0; j < constraintTypes.length; j++) {
 			if(artificialVariables.get(j) != -1) {
 				this.addVariableAt(j, 1);
@@ -270,10 +286,10 @@ public class LPP {
 		for(int j = 0; j < lpp.constraintRightHandSides.length; j++) {
 			lpp.pivot(possibleSolution.get(j), j);
 		}
-
+		
 		for(int j = 0; j < lpp.constraintRightHandSides.length; j++) {
 			double[] constraint = lpp.constraintCoefficients[j];
-
+			
 			// Check all basic variables are non-negative
 			if(lpp.constraintRightHandSides[j] < 0) {
 				return false;
@@ -327,7 +343,7 @@ public class LPP {
 			}
 			
 			// Check to see if the basic variable set alpha is feasible
-			if(constraintRightHandSides.length <= alpha.size() && isFeasible(this, alpha)==true) {
+			if(alpha.size() == constraintRightHandSides.length && isFeasible(this, alpha)==true) {
 				foundBasicFeasSol = true;
 				break;
 			}
@@ -488,7 +504,6 @@ public class LPP {
 						if(basicVariables.get(k) == i) {
 							double[] constraint = constraintCoefficients[basicVariableIndex];
 							for(int m = 0; m < constraint.length; m++) {
-								// This had a double 0.0 or -0.0 check.
 								if(constraint[m] != 0.0) {
 									basicVariableIndex = k;
 									break;
@@ -529,6 +544,7 @@ public class LPP {
 		
 		// TODO: Undo makeStandardForm ... convert back or accept mutability of LPP?
 		// TODO: Dependency - print artificial variables?
+		// TODO: Create new LPPSolution objects during 
 
 		// Return the compiled solution.
 		return new LPPSolution(

@@ -2,11 +2,10 @@ package lpp;
 
 public class LPPExamples {
 		
-		public static LPP minimizeExample() {		
+		public static LPP minimizeExample() throws Exception {		
 			return new LPP(
 					"Min", 
-					// new String[] {"x\u2081", "x\u2081", "x\u2081", "x\u2084"},
-					new String[] {"x_1", "x_2", "x_3", "x_4"},
+					new String[] {},
 					new double[] {1, -1, 2, -5}, 
 					new double[][] {
 							{1, 1, 2, 4},	
@@ -17,11 +16,11 @@ public class LPPExamples {
 					0);
 		}
 		
-		public static LPP smallMinimizeExample() {		
+		
+		public static LPP smallMinimizeExample() throws Exception {		
 			return new LPP(
 					"Min", 
-					// new String[] {"x\u2081", "x\u2081"},
-					new String[] {"x_1", "x_2"},
+					new String[] {"a", "b"},
 					new double[] {.6, .8}, 
 					new double[][] {
 							{.6, .2},	
@@ -34,11 +33,10 @@ public class LPPExamples {
 		}
 
 		
-		public static LPP maximizeExample() {		
+		public static LPP maximizeExample() throws Exception {		
 			return new LPP(
 					"Max", 
-					// new String[] {"x\u2081", "x\u2081", "x\u2081"},
-					new String[] {"x_1", "x_2", "x_3"},
+					new String[] {},
 					new double[] {2, 3, 3}, 
 					new double[][] {
 							{3, 2, 0},	
@@ -47,6 +45,47 @@ public class LPPExamples {
 					},
 					new String[] {"²", "²", "²"},
 					new double[] {60, 10, 50}, 
-					0);
+					0
+				);
 		}
-}
+		
+		public static LPP transshipment() throws Exception {
+			return new LPP(
+					"Min",
+					new String[] {},
+					new double[] {16,2,18,16,22,25,23,15,29,20,17,24},
+					new double[][] {
+						{1,1,0,0,0,0,0,0,0,0,0,0},
+						{0,0,1,1,0,0,0,0,0,0,0,0},
+						{0,0,0,0,1,1,0,0,0,0,0,0},
+						{1,0,1,0,1,0,-1,-1,-1,0,0,0},
+						{0,1,0,1,0,1,0,0,0,-1,-1,-1},
+						{0,0,0,0,0,0,1,0,0,1,0,0},
+						{0,0,0,0,0,0,0,1,0,0,1,0},
+						{0,0,0,0,0,0,0,0,1,0,0,1},
+					},
+					new String[] {"=","=","=","=","=","²","²","²"},
+					new double[] {72,105,83,0,0,90,80,120},
+					0
+				);
+		};
+			
+		public static LPP strictEquality() throws Exception {
+			return new LPP(
+					"Min",
+					new String[] {},
+					new double[] {3,4,5,2,7,8},
+					new double[][] {
+							{1,1,1,0,0,0},
+							{0,0,0,0,1,1},
+							{1,0,0,-1,0,0},
+							{0,1,0,1,-1,0},
+							{0,0,1,0,0,-1}
+					},
+					new String[] {"=","=","=","=","="},
+					new double[] {5,5,0,0,0},
+					0
+				);
+		}
+	}
+
