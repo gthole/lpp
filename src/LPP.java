@@ -20,7 +20,7 @@ public class LPP {
 	private static final boolean USE_SUBSCRIPT_UNICODE = false;
 
 	public static void main( String[] args ) throws Exception {
-		LPP lpp = LPPExamples.maximizeExample();
+		LPP lpp = LPPExamples.transshipment();
 		System.out.println(lpp.toString());
 		
 		LPPSolution solved = lpp.solve();
@@ -343,7 +343,7 @@ public class LPP {
 			}
 			
 			// Check to see if the basic variable set alpha is feasible
-			if(alpha.size() == constraintRightHandSides.length && isFeasible(this, alpha)==true) {
+			if(alpha.size() == constraintRightHandSides.length && isFeasible(this, alpha)) {
 				foundBasicFeasSol = true;
 				break;
 			}
@@ -379,7 +379,7 @@ public class LPP {
 		
 		for(int i = 0; i < objectiveFunctionCoefficients.length; i++) {
 			double coefficientTerm = maxormin * objectiveFunctionCoefficients[i];
-			
+
 			if(!artificialVariables.contains(i)) {
 				if(coefficientTerm < q) {
 					q = coefficientTerm;
@@ -392,24 +392,23 @@ public class LPP {
 
 	private int choosePivotConstraint(int n) {
 		
-		// Correct?
+		// Short-circuit the procedure if choosePivotVar gives -1.
 		if (n == -1) {
 			return 0;
 		}
 		
 		// Initialize variables
-		double q = 0;
+		Double q = Double.POSITIVE_INFINITY;
 		int choice = -1;
 		
 		// Run down the column for the given variable, compare ratios of coefficient/RHS
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
 			if(constraint[n] > 0) {
-				double ratio =  constraintRightHandSides[n] / constraint[n];
+				double ratio =  constraintRightHandSides[j] / constraint[n];
 				
-				// q holds the lowest ratio, if a lower ratio is found, our choice is changed to corresponding constraint index
-				if(j == 0 || q < ratio) {
-					
+				// q holds the lowest ratio, if a lowest ratio is found, our choice is changed to corresponding constraint index
+				if(j == 0 || Double.compare(ratio, q) < 0) {
 					q = ratio;
 					choice = j;
 				}
@@ -418,7 +417,8 @@ public class LPP {
 
 		return choice;
 	}
-
+	
+	
 	public LPPSolution solve() {
 		// Initialize Variables
 		int varNum = variableNames.length; // Point badness if we are going to be incrementing this later?
