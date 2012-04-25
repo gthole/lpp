@@ -53,7 +53,7 @@ public class LPPExamples {
 			return new LPP(
 					"Min",
 					new String[] {},
-					new double[] {16,2,18,16,22,25,23,15,29,20,17,24},
+					new double[] {16,21,18,16,22,25,23,15,29,20,17,24},
 					new double[][] {
 						{1,1,0,0,0,0,0,0,0,0,0,0},
 						{0,0,1,1,0,0,0,0,0,0,0,0},
