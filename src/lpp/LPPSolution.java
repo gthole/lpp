@@ -114,8 +114,12 @@ public class LPPSolution {
 		return this.feasibleSolutionTime;
 	}
 	
-	public String[] getconstraintTypes () {
+	public String[] getConstraintTypes () {
 		return this.constraintTypes;
+	}
+	
+	public double getObjectiveFunctionValue () {
+		return this.objectiveFunctionValue;
 	}
 	
 	private static String formatDecimals(double d) {
