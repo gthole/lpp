@@ -11,7 +11,7 @@ public class LPPExamples {
 							{1, 1, 2, 4},	
 							{0, 3, 1, 8}
 					},
-					new String[] {"=", "="},
+					new int[] {LPP.EQ, LPP.EQ},
 					new double[] {6, 3}, 
 					0);
 		}
@@ -26,7 +26,7 @@ public class LPPExamples {
 							{.6, .2},	
 							{.1, .5}
 					},
-					new String[] {"³", "³"},
+					new int[] {LPP.GT, LPP.GT},
 					new double[] {30, 26}, 
 					0);
 
@@ -43,7 +43,7 @@ public class LPPExamples {
 							{-1, 1, 4},
 							{2, -2, 5}
 					},
-					new String[] {"²", "²", "²"},
+					new int[] {LPP.LT, LPP.LT, LPP.LT},
 					new double[] {60, 10, 50}, 
 					0
 				);
@@ -64,7 +64,7 @@ public class LPPExamples {
 						{0,0,0,0,0,0,0,1,0,0,1,0},
 						{0,0,0,0,0,0,0,0,1,0,0,1},
 					},
-					new String[] {"=","=","=","=","=","²","²","²"},
+					new int[] {LPP.EQ,LPP.EQ,LPP.EQ,LPP.EQ,LPP.EQ,LPP.LT,LPP.LT,LPP.LT},
 					new double[] {72,105,83,0,0,90,80,120},
 					0
 				);
@@ -82,7 +82,7 @@ public class LPPExamples {
 							{0,1,0,1,-1,0},
 							{0,0,1,0,0,-1}
 					},
-					new String[] {"=","=","=","=","="},
+					new int[] {LPP.EQ,LPP.EQ,LPP.EQ,LPP.EQ,LPP.EQ},
 					new double[] {5,5,0,0,0},
 					0
 				);
