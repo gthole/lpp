@@ -6,12 +6,16 @@ import java.text.DecimalFormat;
 
 
 public class LPP {
+	
+	public static final int EQ = 0;
+	public static final int LT = 1;
+	public static final int GT = 2;
 
 	private objectiveFunctionTypes objectiveFunctionType;
 	private String[] variableNames;
 	private double[] objectiveFunctionCoefficients;
 	private double[][] constraintCoefficients;
-	private String[] constraintTypes;
+	private int[] constraintTypes;
 	private double[] constraintRightHandSides;
 	private double objectiveFunctionValue;
 
@@ -35,7 +39,7 @@ public class LPP {
 		String[] variableNames, 
 		double[] objectiveFunctionCoefficients, 
 		double[][] constraintCoefficients, 
-		String[] constraintTypes, 
+		int[] constraintTypes, 
 		double[] constraintRightHandSides, 
 		double objectiveFunctionValue) throws Exception {
 		
@@ -83,7 +87,7 @@ public class LPP {
 		for(int j = 0; j < constraintRightHandSides.length; j++) {
 			double[] constraint = constraintCoefficients[j];
 			output += displayEqLine(constraint, variableNames);
-			output += " " + constraintTypes[j];
+			output += " " + (constraintTypes[j] == EQ ? "=" : (constraintTypes[j] == LT ? "<" : ">"));
 			output += " "  + formatDecimals(constraintRightHandSides[j]) ;
 			output += '\n';
 		}
@@ -132,7 +136,6 @@ public class LPP {
 			return "_"+n;
 		}
 		
-		@SuppressWarnings("unused")
 		String index = "" + n;
 		String subscript = "";
 		char c;
@@ -157,9 +160,9 @@ public class LPP {
 	public void makeStandardForm() {
 		//Change Signs to = by adding variables
 		for(int i = 0; i < constraintTypes.length; i++) {
-			if(constraintTypes[i] != "=") {
-				this.addVariableAt(i, (constraintTypes[i] == "³") ? -1 : 1);
-				constraintTypes[i] = "=";
+			if(constraintTypes[i] != EQ) {
+				addVariableAt(i, (constraintTypes[i] == LT) ? 1 : -1);
+				constraintTypes[i] = EQ;
 			}
 		}
 	}
@@ -167,9 +170,9 @@ public class LPP {
 	private void makeStandardForm(ArrayList<Integer> artificialVariables) {
 		// Change signs to = by adding variables
 		for(int i = 0; i < constraintTypes.length; i++) {
-			if(constraintTypes[i] != "=") {
-				addVariableAt(i, (constraintTypes[i] == "³") ? -1 : 1);
-				constraintTypes[i] = "=";
+			if(constraintTypes[i] != EQ) {
+				addVariableAt(i, (constraintTypes[i] == LT) ? 1 : -1);
+				constraintTypes[i] = EQ;
 				artificialVariables = increaseArtificialVariableIndices(artificialVariables);
 			}
 		}
@@ -188,7 +191,7 @@ public class LPP {
 		ArrayList<Integer> assignments = new ArrayList<Integer>();
 		int k = 0;
 		for(int j = 0; j < constraintTypes.length; j++) {
-			if(constraintTypes[j] == "=") {
+			if(constraintTypes[j] == EQ) {
 				assignments.add(objectiveFunctionCoefficients.length + k);
 				k++;
 			}
@@ -525,7 +528,7 @@ public class LPP {
 
 		// Collect constraint sensitivity analysis data from final tableau
 		for(int j = 0; j < constraintTypes.length; j++) {
-			if(constraintTypes[j] == "=") {
+			if(constraintTypes[j] == EQ) {
 				slack[j] = 0;
 				shadowPrice[j] = -1 * objectiveFunctionCoefficients[artificialVariables.get(j)];
 			}

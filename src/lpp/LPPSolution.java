@@ -8,7 +8,7 @@ public class LPPSolution {
 	private double[] solution;
 	private double objectiveFunctionValue;
 	private String[] variableNames;
-	private String[] constraintTypes;
+	private int[] constraintTypes;
 	private double[] slack;
 	private double[] shadowPrice;
 	private double[] reducedCost;
@@ -28,7 +28,7 @@ public class LPPSolution {
 			double[] optimalSolution, 
 			double objectiveFunctionValue, 
 			String[] variableNames, 
-			String[] constraintTypes, 
+			int[] constraintTypes, 
 			double[] slack, 
 			double[] shadowPrice, 
 			double[] reducedCost,
@@ -114,7 +114,7 @@ public class LPPSolution {
 		return this.feasibleSolutionTime;
 	}
 	
-	public String[] getConstraintTypes () {
+	public int[] getConstraintTypes () {
 		return this.constraintTypes;
 	}
 	
